@@ -1,0 +1,941 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Brain Mapper AI</title>
+    <style>
+        /* --- Reset & Base --- */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background: #1e1e1e;
+            color: #dcddde;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .container {
+            display: flex;
+            height: 100vh;
+        }
+
+        /* --- Sidebar --- */
+        .sidebar {
+            width: 250px;
+            background: #252526;
+            /* VS Code-like dark */
+            border-right: 1px solid #333;
+            display: flex;
+            flex-direction: column;
+            z-index: 10;
+        }
+
+        .sidebar-header {
+            padding: 20px;
+            border-bottom: 1px solid #333;
+        }
+
+        .sidebar-header h1 {
+            font-size: 18px;
+            font-weight: 600;
+            color: #fff;
+            margin-bottom: 15px;
+        }
+
+        .new-note-btn {
+            width: 100%;
+            padding: 8px;
+            background: #7c3aed;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 500;
+            transition: background 0.2s;
+        }
+
+        .new-note-btn:hover {
+            background: #6d28d9;
+        }
+
+        .notes-list {
+            flex: 1;
+            overflow-y: auto;
+            padding: 10px;
+        }
+
+        .note-item {
+            padding: 8px 12px;
+            margin-bottom: 2px;
+            color: #ccc;
+            border-radius: 3px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .note-item:hover {
+            background: #2a2d2e;
+            color: #fff;
+        }
+
+        .note-item.active {
+            background: #37373d;
+            color: #fff;
+            font-weight: 500;
+        }
+
+        /* --- Main Content Area --- */
+        .main-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background: #1e1e1e;
+            position: relative;
+        }
+
+        /* --- Editor Header --- */
+        .editor-header {
+            padding: 20px 30px;
+            /* Aligns with editor text padding */
+            background: #1e1e1e;
+            /* Transparent look */
+            border-bottom: 1px solid #333;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            height: 70px;
+        }
+
+        .editor-header input {
+            flex: 1;
+            background: transparent;
+            border: none;
+            color: #fff;
+            font-size: 24px;
+            /* Larger title */
+            font-weight: 700;
+            outline: none;
+        }
+
+        .editor-header input::placeholder {
+            color: #555;
+        }
+
+        .view-toggle {
+            display: flex;
+            gap: 5px;
+            background: #252526;
+            padding: 3px;
+            border-radius: 6px;
+        }
+
+        .view-btn {
+            padding: 6px 12px;
+            background: transparent;
+            border: none;
+            color: #888;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .view-btn.active {
+            background: #37373d;
+            color: #fff;
+        }
+
+        /* --- Editor Container (The Writing Area) --- */
+        .editor-container {
+            flex: 1;
+            position: relative;
+            /* Flex 1 ensures it takes all remaining height */
+        }
+
+        /* 
+           Wrapper, Textarea, and Backdrop all share the exact same 
+           geometry to ensure text and underlines align perfectly.
+        */
+        .editor-wrapper,
+        .backdrop,
+        .editor-textarea {
+            width: 100%;
+            height: 100%;
+            border: none;
+            margin: 0;
+            padding: 30px;
+            /* Consistent padding */
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            font-size: 16px;
+            line-height: 1.6;
+            box-sizing: border-box;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+
+        .editor-wrapper {
+            position: relative;
+        }
+
+        /* 
+           BACKDROP: Sits behind.
+           It has transparent text but visible decorations (red underlines).
+           It MUST scroll exactly like the textarea.
+        */
+        .backdrop {
+            position: absolute;
+            top: 0;
+            left: 0;
+            z-index: 1;
+            color: transparent;
+            pointer-events: none;
+            overflow-y: scroll;
+            /* Force scrollbar track to reserve space */
+            scrollbar-color: transparent transparent;
+            /* Firefox hidden scroll */
+        }
+
+        /* Hide scrollbar visually for Chrome/Safari/Edge but keep space */
+        .backdrop::-webkit-scrollbar {
+            background: transparent;
+            width: 10px;
+        }
+
+        .backdrop::-webkit-scrollbar-thumb {
+            background: transparent;
+        }
+
+        /* 
+           TEXTAREA: Sits on top.
+           Transparent background allows the backdrop's red lines to show through.
+        */
+        .editor-textarea {
+            position: absolute;
+            top: 0;
+            left: 0;
+            z-index: 2;
+            background: transparent;
+            color: #dcddde;
+            /* Visible text color */
+            outline: none;
+            resize: none;
+            overflow-y: scroll;
+            /* Force scrollbar track */
+        }
+
+        .editor-textarea::-webkit-scrollbar {
+            width: 10px;
+            background: #1e1e1e;
+        }
+
+        .editor-textarea::-webkit-scrollbar-thumb {
+            background: #444;
+            border-radius: 5px;
+        }
+
+        .editor-textarea::placeholder {
+            color: #505050;
+            font-style: italic;
+        }
+
+        /* Highlight Style (The red wavy line) */
+        .misspelled {
+            border-bottom: 2px wavy #ff4444;
+            /* Optional: slight red tint background */
+            /* background: rgba(255, 68, 68, 0.05); */
+        }
+
+        /* --- Graph View --- */
+        .graph-view {
+            width: 100%;
+            height: 100%;
+            display: none;
+            position: absolute;
+            top: 0;
+            left: 0;
+            background: #1e1e1e;
+            z-index: 5;
+        }
+
+        .graph-view.active {
+            display: flex;
+            flex-direction: column;
+        }
+
+        #graph-canvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+        }
+
+        .graph-info {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(30, 30, 30, 0.9);
+            border: 1px solid #333;
+            padding: 15px;
+            border-radius: 8px;
+            font-size: 13px;
+            pointer-events: none;
+        }
+
+        /* --- Link Suggestions Popup --- */
+        .link-suggestion {
+            position: absolute;
+            background: #252526;
+            border: 1px solid #454545;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+            border-radius: 4px;
+            padding: 5px 0;
+            max-height: 200px;
+            overflow-y: auto;
+            z-index: 1000;
+            display: none;
+            min-width: 150px;
+        }
+
+        .link-suggestion.active {
+            display: block;
+        }
+
+        .link-item {
+            padding: 8px 12px;
+            cursor: pointer;
+            font-size: 13px;
+            color: #ccc;
+        }
+
+        .link-item:hover {
+            background: #7c3aed;
+            color: white;
+        }
+
+        /* --- Empty State --- */
+        .empty-state {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: #555;
+            z-index: 0;
+        }
+
+        .empty-state h2 {
+            color: #888;
+            margin-bottom: 10px;
+        }
+
+        /* --- AI Chat --- */
+        .ai-fab {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            width: 50px;
+            height: 50px;
+            background: #7c3aed;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
+            z-index: 2000;
+            font-size: 20px;
+            transition: transform 0.2s;
+        }
+
+        .ai-fab:hover {
+            transform: scale(1.1);
+        }
+
+        .ai-chat-window {
+            position: fixed;
+            bottom: 90px;
+            right: 30px;
+            width: 320px;
+            height: 450px;
+            background: #252526;
+            border-radius: 8px;
+            border: 1px solid #333;
+            display: none;
+            flex-direction: column;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            z-index: 1999;
+        }
+
+        .ai-chat-window.active {
+            display: flex;
+        }
+
+        .chat-header {
+            padding: 12px 15px;
+            background: #333;
+            font-size: 13px;
+            font-weight: 600;
+            display: flex;
+            justify-content: space-between;
+            color: #fff;
+        }
+
+        .chat-messages {
+            flex: 1;
+            padding: 15px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .message {
+            max-width: 85%;
+            padding: 8px 12px;
+            border-radius: 8px;
+            font-size: 13px;
+            line-height: 1.4;
+        }
+
+        .message.user {
+            background: #7c3aed;
+            color: white;
+            align-self: flex-end;
+        }
+
+        .message.bot {
+            background: #3a3a3a;
+            color: #dcddde;
+            align-self: flex-start;
+        }
+
+        .chat-input-area {
+            padding: 10px;
+            border-top: 1px solid #333;
+            display: flex;
+            gap: 8px;
+        }
+
+        .chat-input {
+            flex: 1;
+            background: #1e1e1e;
+            border: 1px solid #444;
+            padding: 8px 12px;
+            border-radius: 15px;
+            color: white;
+            outline: none;
+            font-size: 13px;
+        }
+
+        .send-btn {
+            background: transparent;
+            border: none;
+            color: #7c3aed;
+            cursor: pointer;
+            font-weight: bold;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <!-- SIDEBAR -->
+        <div class="sidebar">
+            <div class="sidebar-header">
+                <h1>🧠 Brain Mapper</h1>
+                <button class="new-note-btn" onclick="createNewNote()">+ New Note</button>
+            </div>
+            <div class="notes-list" id="notesList"></div>
+        </div>
+
+        <!-- MAIN CONTENT -->
+        <div class="main-content">
+            <div class="editor-header">
+                <input type="text" id="noteTitle" placeholder="Untitled" oninput="updateNoteTitle()">
+                <div class="view-toggle">
+                    <button class="view-btn active" onclick="switchView('editor')">Editor</button>
+                    <button class="view-btn" onclick="switchView('graph')">Graph View</button>
+                </div>
+            </div>
+
+            <div class="editor-container">
+                <!-- EDITOR MODE -->
+                <div class="editor-wrapper" id="editorView">
+
+                    <!-- The Invisible Backdrop for Spellcheck Underlines -->
+                    <div class="backdrop" id="backdrop">
+                        <div class="highlights" id="highlights"></div>
+                    </div>
+
+                    <!-- The Actual Typing Area -->
+                    <textarea class="editor-textarea" id="noteContent" style="display: none;"
+                        placeholder="Start typing... Use [[Note Title]] to link to other notes" spellcheck="false"
+                        oninput="handleInput(); handleScroll();" onscroll="handleScroll()"></textarea>
+
+                    <!-- Empty State Message -->
+                    <div class="empty-state" id="emptyState">
+                        <h2>Welcome to Brain Mapper</h2>
+                        <p>Select a note or create a new one.</p>
+                    </div>
+                </div>
+
+                <!-- GRAPH MODE -->
+                <div class="graph-view" id="graphView">
+                    <canvas id="graph-canvas"></canvas>
+                    <div class="graph-info">
+                        <p><strong>Nodes:</strong> <span id="nodeCount">0</span></p>
+                        <p><strong>Links:</strong> <span id="linkCount">0</span></p>
+                    </div>
+                </div>
+
+                <!-- Link Suggestions Popup -->
+                <div class="link-suggestion" id="linkSuggestion"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- AI Chat -->
+    <div class="ai-fab" onclick="toggleChat()"><span>🤖</span></div>
+    <div class="ai-chat-window" id="aiChatWindow">
+        <div class="chat-header">
+            <span>Brain Assistant</span>
+            <span style="cursor: pointer;" onclick="toggleChat()">✕</span>
+        </div>
+        <div class="chat-messages" id="chatMessages">
+            <div class="message bot">Hello! Ask me about your notes.</div>
+        </div>
+        <div class="chat-input-area">
+            <input type="text" class="chat-input" id="chatInput" placeholder="Ask a question..."
+                onkeypress="handleChatKey(event)">
+            <button class="send-btn" onclick="sendMessage()">➤</button>
+        </div>
+    </div>
+
+    <script>
+        // --- State ---
+        let notes = [];
+        let currentNoteId = null;
+        let graphNodes = [];
+        let graphLinks = [];
+        let canvas, ctx;
+        let isDragging = false;
+        let draggedNode = null;
+
+        // --- Simulated Dictionary ---
+        const commonWords = new Set([
+            "the", "be", "to", "of", "and", "a", "in", "that", "have", "i", "it", "for", "not", "on", "with", "he", "as", "you", "do", "at", "this", "but", "his", "by", "from", "they", "we", "say", "her", "she", "or", "an", "will", "my", "one", "all", "would", "there", "their", "what", "so", "up", "out", "if", "about", "who", "get", "which", "go", "me", "when", "make", "can", "like", "time", "no", "just", "him", "know", "take", "people", "into", "year", "your", "good", "some", "could", "them", "see", "other", "than", "then", "now", "look", "only", "come", "its", "over", "think", "also", "back", "after", "use", "two", "how", "our", "work", "first", "well", "way", "even", "new", "want", "because", "any", "these", "give", "day", "most", "us", "brain", "mapper", "note", "title", "graph", "link", "code", "html", "css", "javascript", "js", "web", "dev", "app", "data", "is", "are", "was", "were", "been", "has", "had", "create", "edit", "delete", "view", "idea", "project", "start", "typing"
+        ]);
+
+        function init() {
+            canvas = document.getElementById('graph-canvas');
+            ctx = canvas.getContext('2d');
+            resizeCanvas();
+            window.addEventListener('resize', resizeCanvas);
+            canvas.addEventListener('mousedown', onMouseDown);
+            canvas.addEventListener('mousemove', onMouseMove);
+            canvas.addEventListener('mouseup', onMouseUp);
+            renderNotesList();
+        }
+
+        // --- Note Operations ---
+        function createNewNote() {
+            const note = {
+                id: Date.now(),
+                title: 'Untitled',
+                content: '',
+                links: []
+            };
+            notes.push(note);
+            openNote(note.id);
+        }
+
+        function renderNotesList() {
+            const list = document.getElementById('notesList');
+            list.innerHTML = notes.map(note => `
+                <div class="note-item ${note.id === currentNoteId ? 'active' : ''}" onclick="openNote(${note.id})">
+                    ${note.title || 'Untitled'}
+                </div>
+            `).join('');
+        }
+
+        function openNote(id) {
+            currentNoteId = id;
+            const note = notes.find(n => n.id === id);
+            if (note) {
+                document.getElementById('emptyState').style.display = 'none';
+                document.getElementById('noteContent').style.display = 'block';
+                document.getElementById('backdrop').style.display = 'block';
+
+                document.getElementById('noteTitle').value = note.title;
+                const textarea = document.getElementById('noteContent');
+                textarea.value = note.content;
+
+                renderNotesList();
+                switchView('editor');
+
+                // Trigger spellcheck and scroll sync
+                textarea.focus();
+                checkSpelling();
+                handleScroll();
+            }
+        }
+
+        function updateNoteTitle() {
+            const note = notes.find(n => n.id === currentNoteId);
+            if (note) {
+                note.title = document.getElementById('noteTitle').value || 'Untitled';
+                renderNotesList();
+            }
+        }
+
+        // --- Editor & Spellcheck ---
+        function handleInput() {
+            const textarea = document.getElementById('noteContent');
+            const note = notes.find(n => n.id === currentNoteId);
+
+            if (note) {
+                note.content = textarea.value;
+                extractLinks(note);
+            }
+
+            checkSpelling();
+            checkForLinkTrigger(textarea);
+        }
+
+        function handleScroll() {
+            const textarea = document.getElementById('noteContent');
+            const backdrop = document.getElementById('backdrop');
+            backdrop.scrollTop = textarea.scrollTop;
+            backdrop.scrollLeft = textarea.scrollLeft;
+        }
+
+        function checkSpelling() {
+            const textarea = document.getElementById('noteContent');
+            const highlights = document.getElementById('highlights');
+            let text = textarea.value;
+
+            // HTML Escape to prevent XSS in the backdrop
+            text = text.replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;');
+
+            // Regex to find words and check against dictionary
+            const processedText = text.replace(/\b([a-zA-Z]{2,})\b/g, (match) => {
+                const lower = match.toLowerCase();
+                // If it's a known word OR matches a note title, it's valid
+                const isTitle = notes.some(n => n.title.toLowerCase().includes(lower));
+                if (commonWords.has(lower) || isTitle) {
+                    return match;
+                } else {
+                    return `<span class="misspelled">${match}</span>`;
+                }
+            });
+
+            // Replace newlines with <br> and add trailing space for cursor alignment
+            highlights.innerHTML = processedText.replace(/\n/g, '<br>') + '<br>&nbsp;';
+        }
+
+        // --- Link Features ---
+        function extractLinks(note) {
+            const regex = /\[\[(.*?)\]\]/g;
+            const matches = [...note.content.matchAll(regex)];
+            note.links = matches.map(m => m[1]);
+        }
+
+        function checkForLinkTrigger(textarea) {
+            const text = textarea.value;
+            const cursorPos = textarea.selectionStart;
+            const lastChars = text.substring(Math.max(0, cursorPos - 2), cursorPos);
+
+            if (lastChars === '[[') {
+                showLinkSuggestions(textarea);
+            } else {
+                hideLinkSuggestions();
+            }
+        }
+
+        function showLinkSuggestions(textarea) {
+            const suggestion = document.getElementById('linkSuggestion');
+
+            // Simple logic: exclude current note
+            const availableNotes = notes.filter(n => n.id !== currentNoteId);
+
+            if (availableNotes.length === 0) {
+                suggestion.style.display = 'none';
+                return;
+            }
+
+            suggestion.innerHTML = availableNotes
+                .map(n => `<div class="link-item" onclick="insertLink('${n.title.replace(/'/g, "\\\'")}')">${n.title}</div>`)
+                .join('');
+
+            // Basic Positioning near cursor (simplified for demo)
+            // Ideally use getBoundingClientRect of a dummy element at cursor pos
+            const rect = textarea.getBoundingClientRect();
+            suggestion.style.left = (rect.left + 40) + 'px';
+            suggestion.style.top = (rect.top + 80) + 'px';
+            suggestion.classList.add('active');
+        }
+
+        function hideLinkSuggestions() {
+            document.getElementById('linkSuggestion').classList.remove('active');
+        }
+
+        function insertLink(title) {
+            const textarea = document.getElementById('noteContent');
+            const text = textarea.value;
+            const cursorPos = textarea.selectionStart;
+
+            const beforeCursor = text.substring(0, cursorPos);
+            const afterCursor = text.substring(cursorPos);
+            const lastBrackets = beforeCursor.lastIndexOf('[[');
+
+            if (lastBrackets !== -1) {
+                textarea.value = text.substring(0, lastBrackets) + '[[' + title + ']]' + afterCursor;
+                const newPos = lastBrackets + title.length + 4;
+                textarea.focus();
+                textarea.setSelectionRange(newPos, newPos);
+            }
+
+            hideLinkSuggestions();
+            handleInput();
+        }
+
+        // --- UI & View Switch ---
+        function switchView(view) {
+            document.querySelectorAll('.view-btn').forEach(btn => btn.classList.remove('active'));
+            const buttons = document.querySelectorAll('.view-btn');
+
+            if (view === 'editor') {
+                buttons[0].classList.add('active');
+                document.getElementById('editorView').style.display = 'block';
+                document.getElementById('graphView').classList.remove('active');
+            } else {
+                buttons[1].classList.add('active');
+                document.getElementById('editorView').style.display = 'none';
+                document.getElementById('graphView').classList.add('active');
+                setTimeout(() => {
+                    resizeCanvas();
+                    updateGraph();
+                    animateGraph();
+                }, 50);
+            }
+        }
+
+        // --- Graph Visualization ---
+        function resizeCanvas() {
+            const container = canvas.parentElement;
+            if (!container) return;
+            canvas.width = container.clientWidth;
+            canvas.height = container.clientHeight;
+        }
+
+        function updateGraph() {
+            const centerX = canvas.width / 2;
+            const centerY = canvas.height / 2;
+
+            if (graphNodes.length !== notes.length) {
+                graphNodes = notes.map((note, index) => {
+                    const angle = (index / notes.length) * Math.PI * 2;
+                    return {
+                        id: note.id,
+                        title: note.title,
+                        x: centerX + Math.cos(angle) * 100,
+                        y: centerY + Math.sin(angle) * 100,
+                        vx: 0, vy: 0, radius: 25
+                    };
+                });
+            }
+
+            graphLinks = [];
+            notes.forEach(note => {
+                note.links.forEach(linkTitle => {
+                    const target = notes.find(n => n.title === linkTitle);
+                    if (target) {
+                        graphLinks.push({ source: note.id, target: target.id });
+                    }
+                });
+            });
+
+            document.getElementById('nodeCount').textContent = graphNodes.length;
+            document.getElementById('linkCount').textContent = graphLinks.length;
+        }
+
+        function animateGraph() {
+            if (!document.getElementById('graphView').classList.contains('active')) return;
+
+            // Physics (Repulsion & Attraction)
+            const k = 100; // ideal spring length
+
+            // Repulsion
+            for (let i = 0; i < graphNodes.length; i++) {
+                for (let j = i + 1; j < graphNodes.length; j++) {
+                    const n1 = graphNodes[i];
+                    const n2 = graphNodes[j];
+                    const dx = n2.x - n1.x;
+                    const dy = n2.y - n1.y;
+                    const d = Math.sqrt(dx * dx + dy * dy) || 1;
+                    const force = 5000 / (d * d); // Coulomb's lawish
+                    const fx = (dx / d) * force;
+                    const fy = (dy / d) * force;
+                    n1.vx -= fx; n1.vy -= fy;
+                    n2.vx += fx; n2.vy += fy;
+                }
+            }
+
+            // Spring (Links)
+            graphLinks.forEach(link => {
+                const s = graphNodes.find(n => n.id === link.source);
+                const t = graphNodes.find(n => n.id === link.target);
+                if (s && t) {
+                    const dx = t.x - s.x;
+                    const dy = t.y - s.y;
+                    const d = Math.sqrt(dx * dx + dy * dy) || 1;
+                    const force = (d - k) * 0.05;
+                    const fx = (dx / d) * force;
+                    const fy = (dy / d) * force;
+                    s.vx += fx; s.vy += fy;
+                    t.vx -= fx; t.vy -= fy;
+                }
+            });
+
+            // Center Gravity & Update
+            const cx = canvas.width / 2;
+            const cy = canvas.height / 2;
+
+            graphNodes.forEach(node => {
+                // Gravity to center
+                node.vx += (cx - node.x) * 0.005;
+                node.vy += (cy - node.y) * 0.005;
+
+                // Friction
+                node.vx *= 0.9;
+                node.vy *= 0.9;
+
+                // Move
+                if (!isDragging || draggedNode !== node) {
+                    node.x += node.vx;
+                    node.y += node.vy;
+                }
+            });
+
+            drawGraph();
+            requestAnimationFrame(animateGraph);
+        }
+
+        function drawGraph() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // Draw Links
+            ctx.strokeStyle = '#4a4a4a';
+            ctx.lineWidth = 2;
+            graphLinks.forEach(link => {
+                const s = graphNodes.find(n => n.id === link.source);
+                const t = graphNodes.find(n => n.id === link.target);
+                if (s && t) {
+                    ctx.beginPath();
+                    ctx.moveTo(s.x, s.y);
+                    ctx.lineTo(t.x, t.y);
+                    ctx.stroke();
+                }
+            });
+
+            // Draw Nodes
+            graphNodes.forEach(node => {
+                ctx.fillStyle = '#7c3aed';
+                ctx.beginPath();
+                ctx.arc(node.x, node.y, node.radius, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.fillStyle = 'white';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.font = '12px sans-serif';
+                ctx.fillText(node.title.substr(0, 10), node.x, node.y);
+            });
+        }
+
+        // --- Graph Interaction ---
+        function onMouseDown(e) {
+            const r = canvas.getBoundingClientRect();
+            const x = e.clientX - r.left;
+            const y = e.clientY - r.top;
+            draggedNode = graphNodes.find(n => Math.hypot(n.x - x, n.y - y) < n.radius);
+            if (draggedNode) isDragging = true;
+        }
+        function onMouseMove(e) {
+            if (isDragging && draggedNode) {
+                const r = canvas.getBoundingClientRect();
+                draggedNode.x = e.clientX - r.left;
+                draggedNode.y = e.clientY - r.top;
+            }
+        }
+        function onMouseUp() {
+            if (isDragging && draggedNode && !movedSignificantly()) {
+                // Click event (open note) could go here
+                openNote(draggedNode.id);
+                switchView('editor');
+            }
+            isDragging = false;
+            draggedNode = null;
+        }
+        function movedSignificantly() { return false; /* simplify for demo */ }
+
+
+        // --- Chat Bot ---
+        function toggleChat() {
+            document.getElementById('aiChatWindow').classList.toggle('active');
+        }
+        function handleChatKey(e) { if (e.key === 'Enter') sendMessage(); }
+        function sendMessage() {
+            const input = document.getElementById('chatInput');
+            const txt = input.value.trim();
+            if (!txt) return;
+
+            const chat = document.getElementById('chatMessages');
+            chat.innerHTML += `<div class="message user">${txt}</div>`;
+            input.value = '';
+            chat.scrollTop = chat.scrollHeight;
+
+            setTimeout(() => {
+                const response = generateAI(txt);
+                chat.innerHTML += `<div class="message bot">${response}</div>`;
+                chat.scrollTop = chat.scrollHeight;
+            }, 600);
+        }
+
+        function generateAI(query) {
+            const q = query.trim();
+
+            // "Only reply to questions"
+            if (!q.endsWith('?')) {
+                return "I can only answer questions. Please ask me something ending with '?'";
+            }
+
+            // "Not make reference to notes" - Generic responses for demo
+            const responses = [
+                "That is an interesting perspective. Tell me more.",
+                "I am a demo AI assistant. I don't have access to external databases yet, but I'm listening.",
+                "Could you elaborate on that?",
+                "That's a great question. What do you think is the answer?",
+                "I am designed to help you think, but I don't read your notes directly anymore."
+            ];
+
+            return responses[Math.floor(Math.random() * responses.length)];
+        }
+
+        init();
+    </script>
+</body>
+
+</html>

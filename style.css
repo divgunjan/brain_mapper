@@ -1,0 +1,560 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'SF Pro Display', 'SF Pro Text', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+    background: #1e1e1e;
+    color: #dcddde;
+    height: 100vh;
+    overflow: hidden;
+}
+
+input,
+button,
+textarea,
+select {
+    font-family: inherit;
+}
+
+.container {
+    display: flex;
+    height: 100vh;
+}
+
+.sidebar {
+    width: 250px;
+    background: #2a2a2a;
+    border-right: 1px solid #3a3a3a;
+    display: flex;
+    flex-direction: column;
+}
+
+.sidebar-header {
+    padding: 20px;
+    border-bottom: 1px solid #3a3a3a;
+}
+
+.brand-container {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+.sidebar-header .logo {
+    height: 40px;
+    width: auto;
+    display: block;
+}
+
+.sidebar-header h1 {
+    font-size: 20px;
+    font-weight: 600;
+}
+
+.new-note-btn {
+    width: 100%;
+    padding: 10px;
+    background: #7c3aed;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+    transition: background 0.2s;
+}
+
+.new-note-btn:hover {
+    background: #6d28d9;
+}
+
+.notes-list {
+    flex: 1;
+    overflow-y: auto;
+    padding: 10px;
+}
+
+.note-item {
+    padding: 10px;
+    margin-bottom: 5px;
+    background: #3a3a3a;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background 0.2s;
+    font-size: 14px;
+}
+
+.note-item:hover {
+    background: #4a4a4a;
+}
+
+.note-item.active {
+    background: #7c3aed;
+}
+
+.main-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.editor-header {
+    padding: 15px 20px;
+    background: #2a2a2a;
+    border-bottom: 1px solid #3a3a3a;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.editor-header input {
+    flex: 1;
+    background: transparent;
+    border: none;
+    color: #dcddde;
+    font-size: 18px;
+    font-weight: 600;
+    outline: none;
+}
+
+.view-toggle {
+    display: flex;
+    gap: 10px;
+    margin-left: auto;
+}
+
+.view-btn {
+    padding: 8px 15px;
+    background: #3a3a3a;
+    border: none;
+    color: #dcddde;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: background 0.2s;
+}
+
+.view-btn:hover {
+    background: #4a4a4a;
+}
+
+.view-btn.active {
+    background: #7c3aed;
+}
+
+.editor-container {
+    flex: 1;
+    display: flex;
+    overflow: hidden;
+}
+
+.editor {
+    flex: 1;
+    padding: 20px;
+    overflow-y: auto;
+}
+
+.editor textarea {
+    width: 100%;
+    height: 100%;
+    background: transparent;
+    border: none;
+    color: #dcddde;
+    font-size: 16px;
+    line-height: 1.6;
+    resize: none;
+    outline: none;
+    font-family: inherit;
+}
+
+.graph-view {
+    flex: 1;
+    display: none;
+    position: relative;
+    min-height: 0;
+}
+
+.graph-view.active {
+    display: flex;
+    flex-direction: column;
+}
+
+#graph-canvas {
+    width: 100%;
+    height: 100%;
+    background: #1e1e1e;
+    display: block;
+}
+
+.graph-info {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    background: rgba(42, 42, 42, 0.9);
+    padding: 15px;
+    border-radius: 8px;
+    font-size: 14px;
+    max-width: 250px;
+}
+
+.graph-info h3 {
+    margin-bottom: 10px;
+    font-size: 16px;
+}
+
+.graph-info p {
+    margin-bottom: 5px;
+    color: #b0b0b0;
+}
+
+.link-suggestion {
+    position: absolute;
+    background: #2a2a2a;
+    border: 1px solid #3a3a3a;
+    border-radius: 5px;
+    padding: 5px 0;
+    max-height: 200px;
+    overflow-y: auto;
+    z-index: 1000;
+    display: none;
+}
+
+.link-suggestion.active {
+    display: block;
+}
+
+.link-item {
+    padding: 8px 15px;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+.link-item:hover {
+    background: #3a3a3a;
+}
+
+.empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    color: #6b6b6b;
+}
+
+.empty-state h2 {
+    font-size: 24px;
+    margin-bottom: 10px;
+}
+
+.empty-state p {
+    font-size: 16px;
+}
+
+/* --- Navigation --- */
+#main-nav {
+    position: fixed;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 90%;
+    max-width: 1200px;
+    background: rgba(42, 42, 42, 0.7);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 50px;
+    padding: 10px 30px;
+    z-index: 1000;
+}
+
+.nav-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.nav-logo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.nav-logo img {
+    height: 30px;
+    width: auto;
+}
+
+.nav-logo span {
+    font-size: 18px;
+    font-weight: 600;
+    color: #fff;
+}
+
+.nav-links {
+    display: flex;
+    gap: 20px;
+    align-items: center;
+}
+
+.nav-links a {
+    text-decoration: none;
+    color: #dcddde;
+    font-size: 14px;
+    font-weight: 500;
+    transition: color 0.2s;
+}
+
+.nav-links a:hover {
+    color: #7c3aed;
+}
+
+.nav-links .cta-btn {
+    background: #7c3aed;
+    color: #fff;
+    padding: 8px 20px;
+    border-radius: 20px;
+    transition: background 0.2s;
+}
+
+.nav-links .cta-btn:hover {
+    background: #6d28d9;
+    color: #fff;
+}
+
+/* --- Sections --- */
+section {
+    min-height: 100vh;
+    width: 100%;
+    display: none;
+    opacity: 0;
+    transition: opacity 0.3s ease-in-out;
+}
+
+section.active-section {
+    display: block;
+    opacity: 1;
+    animation: fadeIn 0.5s forwards;
+}
+
+#app-section.active-section {
+    display: block;
+    /* Ensure block display for the app container */
+}
+
+@keyframes fadeIn {
+    to {
+        opacity: 1;
+    }
+}
+
+/* --- Home Section --- */
+#home-section {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    background: radial-gradient(circle at center, #2a1b3d 0%, #1e1e1e 70%);
+    padding-top: 80px;
+    /* Space for navbar */
+    position: relative;
+    overflow: hidden;
+}
+
+.hero-content h1 {
+    font-size: 64px;
+    font-weight: 700;
+    line-height: 1.1;
+    margin-bottom: 20px;
+    background: -webkit-linear-gradient(45deg, #fff, #a78bfa);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.hero-content .highlight {
+    color: #7c3aed;
+    -webkit-text-fill-color: #7c3aed;
+}
+
+.hero-content p {
+    font-size: 18px;
+    color: #b0b0b0;
+    max-width: 600px;
+    margin: 0 auto 40px;
+    line-height: 1.6;
+}
+
+.cta-group {
+    display: flex;
+    gap: 15px;
+    justify-content: center;
+    margin-bottom: 60px;
+}
+
+.hero-btn {
+    padding: 12px 30px;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    border: none;
+    transition: transform 0.2s;
+}
+
+.hero-btn:hover {
+    transform: translateY(-2px);
+}
+
+.hero-btn.primary {
+    background: #7c3aed;
+    color: #fff;
+}
+
+.hero-btn.secondary {
+    background: rgba(255, 255, 255, 0.1);
+    color: #fff;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Floating Cards Animation */
+.floating-cards {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    top: 0;
+    left: 0;
+    pointer-events: none;
+    z-index: -1;
+}
+
+.card {
+    position: absolute;
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(5px);
+    padding: 10px 20px;
+    border-radius: 12px;
+    color: #a78bfa;
+    font-size: 14px;
+    border: 1px solid rgba(167, 139, 250, 0.2);
+    animation: float 6s ease-in-out infinite;
+}
+
+.card-1 {
+    top: 20%;
+    left: 15%;
+    animation-delay: 0s;
+    transform: rotate(-5deg);
+}
+
+.card-2 {
+    top: 30%;
+    right: 20%;
+    animation-delay: 1.5s;
+    transform: rotate(8deg);
+}
+
+.card-3 {
+    bottom: 25%;
+    left: 25%;
+    animation-delay: 3s;
+    transform: rotate(-3deg);
+}
+
+.card-4 {
+    bottom: 35%;
+    right: 15%;
+    animation-delay: 4.5s;
+    transform: rotate(5deg);
+}
+
+@keyframes float {
+    0% {
+        transform: translateY(0px) rotate(var(--r, 0deg));
+    }
+
+    50% {
+        transform: translateY(-20px) rotate(var(--r, 0deg));
+    }
+
+    100% {
+        transform: translateY(0px) rotate(var(--r, 0deg));
+    }
+}
+
+/* --- About Section --- */
+#about-section {
+    padding: 100px 20px;
+    background: #1e1e1e;
+    text-align: center;
+    display: none;
+    /* hidden by default */
+}
+
+.about-content h2 {
+    font-size: 42px;
+    margin-bottom: 20px;
+    color: #fff;
+}
+
+.about-content>p {
+    font-size: 18px;
+    color: #b0b0b0;
+    max-width: 800px;
+    margin: 0 auto 60px;
+}
+
+.features-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 30px;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.feature-card {
+    background: #2a2a2a;
+    padding: 40px;
+    border-radius: 16px;
+    border: 1px solid #3a3a3a;
+    transition: transform 0.2s, border-color 0.2s;
+}
+
+.feature-card:hover {
+    transform: translateY(-5px);
+    border-color: #7c3aed;
+}
+
+.feature-card h3 {
+    font-size: 24px;
+    margin-bottom: 15px;
+    color: #7c3aed;
+}
+
+.feature-card p {
+    color: #dcddde;
+    line-height: 1.6;
+}
+
+/* Hide Nav when in App (Optional, or styled differently) */
+/* For now, we keep it but it might overlap the app */
+/* Let's make the Nav stick to top even in App? */
+/* Or maybe hide it in App mode? User said "within the same site using a sticky floating navbar to notes section" */
+/* So navbar should be visible. But it might cover the App header */
+/* We might need padding-top for App section if Nav is present */
+/* But the App has its own layout. Let's adjust #app-section style */
+
+#app-section {
+    padding-top: 80px;
+    /* Space for Navbar */
+    height: 100vh;
+    box-sizing: border-box;
+}
+
+/* Adjust container height in App to account for padding */
+#app-section .container {
+    height: calc(100vh - 80px);
+}

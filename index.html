@@ -1,658 +1,71 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Brain Mapper</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-            background: #1e1e1e;
-            color: #dcddde;
-            height: 100vh;
-            overflow: hidden;
-        }
-
-        .container {
-            display: flex;
-            height: 100vh;
-        }
-
-        .sidebar {
-            width: 250px;
-            background: #2a2a2a;
-            border-right: 1px solid #3a3a3a;
-            display: flex;
-            flex-direction: column;
-        }
-
-        .sidebar-header {
-            padding: 20px;
-            border-bottom: 1px solid #3a3a3a;
-        }
-
-        .sidebar-header h1 {
-            font-size: 20px;
-            font-weight: 600;
-            margin-bottom: 10px;
-        }
-
-        .new-note-btn {
-            width: 100%;
-            padding: 10px;
-            background: #7c3aed;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 14px;
-            font-weight: 500;
-            transition: background 0.2s;
-        }
-
-        .new-note-btn:hover {
-            background: #6d28d9;
-        }
-
-        .notes-list {
-            flex: 1;
-            overflow-y: auto;
-            padding: 10px;
-        }
-
-        .note-item {
-            padding: 10px;
-            margin-bottom: 5px;
-            background: #3a3a3a;
-            border-radius: 5px;
-            cursor: pointer;
-            transition: background 0.2s;
-            font-size: 14px;
-        }
-
-        .note-item:hover {
-            background: #4a4a4a;
-        }
-
-        .note-item.active {
-            background: #7c3aed;
-        }
-
-        .main-content {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-        }
-
-        .editor-header {
-            padding: 15px 20px;
-            background: #2a2a2a;
-            border-bottom: 1px solid #3a3a3a;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .editor-header input {
-            flex: 1;
-            background: transparent;
-            border: none;
-            color: #dcddde;
-            font-size: 18px;
-            font-weight: 600;
-            outline: none;
-        }
-
-        .view-toggle {
-            display: flex;
-            gap: 10px;
-        }
-
-        .view-btn {
-            padding: 8px 15px;
-            background: #3a3a3a;
-            border: none;
-            color: #dcddde;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 14px;
-            transition: background 0.2s;
-        }
-
-        .view-btn:hover {
-            background: #4a4a4a;
-        }
-
-        .view-btn.active {
-            background: #7c3aed;
-        }
-
-        .editor-container {
-            flex: 1;
-            display: flex;
-            overflow: hidden;
-        }
-
-        .editor {
-            flex: 1;
-            padding: 20px;
-            overflow-y: auto;
-        }
-
-        .editor textarea {
-            width: 100%;
-            height: 100%;
-            background: transparent;
-            border: none;
-            color: #dcddde;
-            font-size: 16px;
-            line-height: 1.6;
-            resize: none;
-            outline: none;
-            font-family: inherit;
-        }
-
-        .graph-view {
-            flex: 1;
-            display: none;
-            position: relative;
-            min-height: 0;
-        }
-
-        .graph-view.active {
-            display: flex;
-            flex-direction: column;
-        }
-
-        #graph-canvas {
-            width: 100%;
-            height: 100%;
-            background: #1e1e1e;
-            display: block;
-        }
-
-        .graph-info {
-            position: absolute;
-            top: 20px;
-            right: 20px;
-            background: rgba(42, 42, 42, 0.9);
-            padding: 15px;
-            border-radius: 8px;
-            font-size: 14px;
-            max-width: 250px;
-        }
-
-        .graph-info h3 {
-            margin-bottom: 10px;
-            font-size: 16px;
-        }
-
-        .graph-info p {
-            margin-bottom: 5px;
-            color: #b0b0b0;
-        }
-
-        .link-suggestion {
-            position: absolute;
-            background: #2a2a2a;
-            border: 1px solid #3a3a3a;
-            border-radius: 5px;
-            padding: 5px 0;
-            max-height: 200px;
-            overflow-y: auto;
-            z-index: 1000;
-            display: none;
-        }
-
-        .link-suggestion.active {
-            display: block;
-        }
-
-        .link-item {
-            padding: 8px 15px;
-            cursor: pointer;
-            font-size: 14px;
-        }
-
-        .link-item:hover {
-            background: #3a3a3a;
-        }
-
-        .empty-state {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            height: 100%;
-            color: #6b6b6b;
-        }
-
-        .empty-state h2 {
-            font-size: 24px;
-            margin-bottom: 10px;
-        }
-
-        .empty-state p {
-            font-size: 16px;
-        }
-    </style>
+    <link rel="stylesheet" href="style.css">
 </head>
+
 <body>
-    <div class="container">
-        <div class="sidebar">
-            <div class="sidebar-header">
-                <h1>🧠 Brain Mapper</h1>
-                <button class="new-note-btn" onclick="createNewNote()">+ New Note</button>
+    <nav id="main-nav">
+        <div class="nav-content">
+            <div class="nav-logo">
+                <img src="logo.png" alt="Brain Mapper">
+                <span>Brain Mapper</span>
             </div>
-            <div class="notes-list" id="notesList"></div>
-        </div>
-
-        <div class="main-content">
-            <div class="editor-header">
-                <input type="text" id="noteTitle" placeholder="Untitled" oninput="updateNoteTitle()">
-                <div class="view-toggle">
-                    <button class="view-btn active" onclick="switchView('editor')">Editor</button>
-                    <button class="view-btn" onclick="switchView('graph')">Graph View</button>
-                </div>
-            </div>
-
-            <div class="editor-container">
-                <div class="editor" id="editorView">
-                    <div class="empty-state">
-                        <h2>Welcome to Brain Mapper</h2>
-                        <p>Create a new note to get started</p>
-                        <p style="margin-top: 10px; font-size: 14px;">Link notes with [[Note Title]]</p>
-                    </div>
-                    <textarea id="noteContent" style="display: none;" placeholder="Start typing... Use [[Note Title]] to link to other notes" oninput="handleInput()"></textarea>
-                </div>
-
-                <div class="graph-view" id="graphView">
-                    <canvas id="graph-canvas"></canvas>
-                    <div class="graph-info">
-                        <h3>Graph View</h3>
-                        <p><strong>Nodes:</strong> <span id="nodeCount">0</span></p>
-                        <p><strong>Links:</strong> <span id="linkCount">0</span></p>
-                        <p style="margin-top: 10px; font-size: 12px;">Drag nodes to reposition<br>Click nodes to open notes</p>
-                    </div>
-                </div>
-
-                <div class="link-suggestion" id="linkSuggestion"></div>
+            <div class="nav-links">
+                <a href="#" onclick="showLanding(); scrollToSection('home-section')">Home</a>
+                <a href="#" onclick="scrollToSection('about-section')">About</a>
+                <a href="note-file.html" target="_blank" class="cta-btn">Launch App</a>
             </div>
         </div>
-    </div>
+    </nav>
+    
+    <section id="home-section" class="active-section">
+        <div class="hero-content">
+            <h1>Elevate Your <br><span class="highlight">Strategic Thinking</span></h1>
+            <p>A free and flexible app designed to securely capture, organize, and reflect on your private thoughts
+                anytime, anywhere.</p>
+            <div class="cta-group">
+                <a href="note-file.html" target="_blank" class="hero-btn primary"
+                    style="text-decoration: none; display: inline-block;">Get Started</a>
+                <button onclick="scrollToSection('about-section')" class="hero-btn secondary">Learn More</button>
+            </div>
 
-    <script>
-        let notes = [];
-        let currentNoteId = null;
-        let graphNodes = [];
-        let graphLinks = [];
-        let canvas, ctx;
-        let isDragging = false;
-        let draggedNode = null;
+            <div class="floating-cards">
+                <div class="card card-1">Docs</div>
+                <div class="card card-2">Class Notes</div>
+                <div class="card card-3">Planner</div>
+                <div class="card card-4">Research</div>
+            </div>
+        </div>
+    </section>
 
-        function init() {
-            canvas = document.getElementById('graph-canvas');
-            ctx = canvas.getContext('2d');
-            resizeCanvas();
-            window.addEventListener('resize', resizeCanvas);
-            canvas.addEventListener('mousedown', onMouseDown);
-            canvas.addEventListener('mousemove', onMouseMove);
-            canvas.addEventListener('mouseup', onMouseUp);
-            renderNotesList();
-        }
-
-        function resizeCanvas() {
-            const container = canvas.parentElement;
-            canvas.width = container.clientWidth || window.innerWidth - 250;
-            canvas.height = container.clientHeight || window.innerHeight - 60;
-            
-            // Reposition nodes if they're outside bounds
-            graphNodes.forEach(node => {
-                if (node.x > canvas.width) node.x = canvas.width / 2;
-                if (node.y > canvas.height) node.y = canvas.height / 2;
-                if (node.x < 0) node.x = canvas.width / 2;
-                if (node.y < 0) node.y = canvas.height / 2;
-            });
-            
-            if (document.getElementById('graphView').classList.contains('active')) {
-                updateGraph();
-            }
-        }
-
-        function createNewNote() {
-            const note = {
-                id: Date.now(),
-                title: 'Untitled',
-                content: '',
-                links: []
-            };
-            notes.push(note);
-            currentNoteId = note.id;
-            renderNotesList();
-            showEditor();
-            document.querySelector('.empty-state').style.display = 'none';
-            document.getElementById('noteContent').style.display = 'block';
-            document.getElementById('noteTitle').value = note.title;
-            document.getElementById('noteContent').value = note.content;
-            document.getElementById('noteContent').focus();
-        }
-
-        function renderNotesList() {
-            const list = document.getElementById('notesList');
-            list.innerHTML = notes.map(note => `
-                <div class="note-item ${note.id === currentNoteId ? 'active' : ''}" onclick="openNote(${note.id})">
-                    ${note.title}
+    <section id="about-section" class="hidden-section">
+        <div class="about-content">
+            <h2>About Brain Mapper</h2>
+            <p>Brain Mapper helps students and professionals manage complexity. Improve your productivity by visualizing
+                connections between your ideas.</p>
+            <div class="features-grid">
+                <div class="feature-card">
+                    <h3>Bi-directional Linking</h3>
+                    <p>Connect notes to build a web of knowledge.</p>
                 </div>
-            `).join('');
-        }
+                <div class="feature-card">
+                    <h3>Graph View</h3>
+                    <p>Visualize your second brain in real-time.</p>
+                </div>
+                <div class="feature-card">
+                    <h3>Privacy First</h3>
+                    <p>Your data stays on your device.</p>
+                </div>
+            </div>
+        </div>
+    </section>
 
-        function openNote(id) {
-            currentNoteId = id;
-            const note = notes.find(n => n.id === id);
-            if (note) {
-                document.querySelector('.empty-state').style.display = 'none';
-                document.getElementById('noteContent').style.display = 'block';
-                document.getElementById('noteTitle').value = note.title;
-                document.getElementById('noteContent').value = note.content;
-                renderNotesList();
-            }
-        }
-
-        function updateNoteTitle() {
-            const note = notes.find(n => n.id === currentNoteId);
-            if (note) {
-                note.title = document.getElementById('noteTitle').value || 'Untitled';
-                renderNotesList();
-            }
-        }
-
-        function handleInput() {
-            const note = notes.find(n => n.id === currentNoteId);
-            if (note) {
-                note.content = document.getElementById('noteContent').value;
-                extractLinks(note);
-            }
-
-            const textarea = document.getElementById('noteContent');
-            const text = textarea.value;
-            const cursorPos = textarea.selectionStart;
-            
-            const lastChars = text.substring(Math.max(0, cursorPos - 2), cursorPos);
-            if (lastChars === '[[') {
-                showLinkSuggestions(textarea);
-            } else {
-                hideLinkSuggestions();
-            }
-        }
-
-        function extractLinks(note) {
-            const regex = /\[\[(.*?)\]\]/g;
-            const matches = [...note.content.matchAll(regex)];
-            note.links = matches.map(m => m[1]);
-        }
-
-        function showLinkSuggestions(textarea) {
-            const suggestion = document.getElementById('linkSuggestion');
-            const rect = textarea.getBoundingClientRect();
-            
-            suggestion.innerHTML = notes
-                .filter(n => n.id !== currentNoteId)
-                .map(n => `<div class="link-item" onclick="insertLink('${n.title.replace(/'/g, "\\\'")}')">${n.title}</div>`)
-                .join('');
-            
-            suggestion.style.left = rect.left + 'px';
-            suggestion.style.top = (rect.top + 100) + 'px';
-            suggestion.classList.add('active');
-        }
-
-        function hideLinkSuggestions() {
-            document.getElementById('linkSuggestion').classList.remove('active');
-        }
-
-        function insertLink(title) {
-            const textarea = document.getElementById('noteContent');
-            const text = textarea.value;
-            const cursorPos = textarea.selectionStart;
-            
-            const beforeCursor = text.substring(0, cursorPos);
-            const afterCursor = text.substring(cursorPos);
-            const lastBrackets = beforeCursor.lastIndexOf('[[');
-            
-            if (lastBrackets !== -1) {
-                textarea.value = text.substring(0, lastBrackets) + '[[' + title + ']]' + afterCursor;
-                textarea.selectionStart = textarea.selectionEnd = lastBrackets + title.length + 4;
-            }
-            
-            hideLinkSuggestions();
-            handleInput();
-            textarea.focus();
-        }
-
-        function switchView(view) {
-            document.querySelectorAll('.view-btn').forEach(btn => btn.classList.remove('active'));
-            event.target.classList.add('active');
-
-            if (view === 'editor') {
-                showEditor();
-            } else {
-                showGraph();
-            }
-        }
-
-        function showEditor() {
-            document.getElementById('editorView').style.display = 'flex';
-            document.getElementById('graphView').classList.remove('active');
-        }
-
-        function showGraph() {
-            document.getElementById('editorView').style.display = 'none';
-            document.getElementById('graphView').classList.add('active');
-            
-            // Force canvas resize after display change
-            setTimeout(() => {
-                resizeCanvas();
-                updateGraph();
-                animateGraph();
-            }, 50);
-        }
-
-        function updateGraph() {
-            // Ensure canvas has dimensions
-            if (canvas.width === 0 || canvas.height === 0) {
-                resizeCanvas();
-            }
-            
-            const centerX = canvas.width / 2;
-            const centerY = canvas.height / 2;
-            const radius = Math.min(canvas.width, canvas.height) / 3;
-            
-            graphNodes = notes.map((note, index) => {
-                const angle = (index / notes.length) * Math.PI * 2;
-                return {
-                    id: note.id,
-                    title: note.title,
-                    x: centerX + Math.cos(angle) * radius,
-                    y: centerY + Math.sin(angle) * radius,
-                    vx: 0,
-                    vy: 0,
-                    radius: 30
-                };
-            });
-
-            graphLinks = [];
-            notes.forEach(note => {
-                note.links.forEach(linkTitle => {
-                    const targetNote = notes.find(n => n.title === linkTitle);
-                    if (targetNote) {
-                        graphLinks.push({
-                            source: note.id,
-                            target: targetNote.id
-                        });
-                    }
-                });
-            });
-
-            document.getElementById('nodeCount').textContent = graphNodes.length;
-            document.getElementById('linkCount').textContent = graphLinks.length;
-        }
-
-        function animateGraph() {
-            if (!document.getElementById('graphView').classList.contains('active')) return;
-
-            applyForces();
-            drawGraph();
-            requestAnimationFrame(animateGraph);
-        }
-
-        function applyForces() {
-            const centerX = canvas.width / 2;
-            const centerY = canvas.height / 2;
-
-            graphNodes.forEach(node => {
-                node.vx *= 0.9;
-                node.vy *= 0.9;
-
-                const dx = centerX - node.x;
-                const dy = centerY - node.y;
-                const dist = Math.sqrt(dx * dx + dy * dy);
-                node.vx += dx * 0.001;
-                node.vy += dy * 0.001;
-            });
-
-            for (let i = 0; i < graphNodes.length; i++) {
-                for (let j = i + 1; j < graphNodes.length; j++) {
-                    const n1 = graphNodes[i];
-                    const n2 = graphNodes[j];
-                    const dx = n2.x - n1.x;
-                    const dy = n2.y - n1.y;
-                    const dist = Math.sqrt(dx * dx + dy * dy);
-                    if (dist < 200) {
-                        const force = (200 - dist) * 0.05;
-                        const fx = (dx / dist) * force;
-                        const fy = (dy / dist) * force;
-                        n1.vx -= fx;
-                        n1.vy -= fy;
-                        n2.vx += fx;
-                        n2.vy += fy;
-                    }
-                }
-            }
-
-            graphLinks.forEach(link => {
-                const source = graphNodes.find(n => n.id === link.source);
-                const target = graphNodes.find(n => n.id === link.target);
-                if (source && target) {
-                    const dx = target.x - source.x;
-                    const dy = target.y - source.y;
-                    const dist = Math.sqrt(dx * dx + dy * dy);
-                    const force = (dist - 150) * 0.02;
-                    const fx = (dx / dist) * force;
-                    const fy = (dy / dist) * force;
-                    source.vx += fx;
-                    source.vy += fy;
-                    target.vx -= fx;
-                    target.vy -= fy;
-                }
-            });
-
-            graphNodes.forEach(node => {
-                if (!isDragging || draggedNode !== node) {
-                    node.x += node.vx;
-                    node.y += node.vy;
-                    node.x = Math.max(node.radius, Math.min(canvas.width - node.radius, node.x));
-                    node.y = Math.max(node.radius, Math.min(canvas.height - node.radius, node.y));
-                }
-            });
-        }
-
-        function drawGraph() {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-            ctx.strokeStyle = '#4a4a4a';
-            ctx.lineWidth = 2;
-            graphLinks.forEach(link => {
-                const source = graphNodes.find(n => n.id === link.source);
-                const target = graphNodes.find(n => n.id === link.target);
-                if (source && target) {
-                    ctx.beginPath();
-                    ctx.moveTo(source.x, source.y);
-                    ctx.lineTo(target.x, target.y);
-                    ctx.stroke();
-                }
-            });
-
-            graphNodes.forEach(node => {
-                ctx.fillStyle = '#7c3aed';
-                ctx.beginPath();
-                ctx.arc(node.x, node.y, node.radius, 0, Math.PI * 2);
-                ctx.fill();
-
-                ctx.strokeStyle = '#a78bfa';
-                ctx.lineWidth = 2;
-                ctx.stroke();
-
-                ctx.fillStyle = '#ffffff';
-                ctx.font = '12px sans-serif';
-                ctx.textAlign = 'center';
-                ctx.textBaseline = 'middle';
-                const maxWidth = node.radius * 1.5;
-                const text = node.title.length > 10 ? node.title.substring(0, 10) + '...' : node.title;
-                ctx.fillText(text, node.x, node.y);
-            });
-        }
-
-        function onMouseDown(e) {
-            const rect = canvas.getBoundingClientRect();
-            const x = e.clientX - rect.left;
-            const y = e.clientY - rect.top;
-
-            draggedNode = graphNodes.find(node => {
-                const dx = x - node.x;
-                const dy = y - node.y;
-                return Math.sqrt(dx * dx + dy * dy) < node.radius;
-            });
-
-            if (draggedNode) {
-                isDragging = true;
-            }
-        }
-
-        function onMouseMove(e) {
-            if (isDragging && draggedNode) {
-                const rect = canvas.getBoundingClientRect();
-                draggedNode.x = e.clientX - rect.left;
-                draggedNode.y = e.clientY - rect.top;
-                draggedNode.vx = 0;
-                draggedNode.vy = 0;
-            }
-        }
-
-        function onMouseUp(e) {
-            if (isDragging && draggedNode) {
-                const rect = canvas.getBoundingClientRect();
-                const x = e.clientX - rect.left;
-                const y = e.clientY - rect.top;
-                const dx = x - draggedNode.x;
-                const dy = y - draggedNode.y;
-                
-                if (Math.sqrt(dx * dx + dy * dy) < 5) {
-                    openNote(draggedNode.id);
-                    switchView('editor');
-                    document.querySelectorAll('.view-btn').forEach(btn => btn.classList.remove('active'));
-                    document.querySelectorAll('.view-btn')[0].classList.add('active');
-                }
-            }
-            isDragging = false;
-            draggedNode = null;
-        }
-
-        init();
-    </script>
+    <!-- App Section Removed (Externalized to note-file.html) -->
 </body>
+
 </html>
