@@ -382,31 +382,51 @@ function sendMessage() {
     input.value = '';
     chat.scrollTop = chat.scrollHeight;
 
-    setTimeout(() => {
-        const response = generateAI(txt);
+    // Show loading indicator
+    const loadingId = 'loading-' + Date.now();
+    chat.innerHTML += `<div class="message bot" id="${loadingId}">Typing...</div>`;
+    chat.scrollTop = chat.scrollHeight;
+
+    // Call AI asynchronously
+    generateAI(txt).then(response => {
+        const loadingElement = document.getElementById(loadingId);
+        if (loadingElement) loadingElement.remove();
+
         chat.innerHTML += `<div class="message bot">${response}</div>`;
         chat.scrollTop = chat.scrollHeight;
-    }, 600);
+    }).catch(err => {
+        const loadingElement = document.getElementById(loadingId);
+        if (loadingElement) loadingElement.remove();
+
+        chat.innerHTML += `<div class="message bot error">Error: ${err.message}</div>`;
+    });
 }
 
-function generateAI(query) {
-    const q = query.trim();
+async function generateAI(query) {
+    try {
+        // Dynamic import for browser environment
+        const { GoogleGenerativeAI } = await import("https://esm.run/@google/generative-ai");
 
-    // "Only reply to questions"
-    if (!q.endsWith('?')) {
-        return "I can only answer questions. Please ask me something ending with '?'";
+        // KEY FECTHED FROM env.js (Loaded in HTML)
+        const API_KEY = window.ENV ? window.ENV.API_KEY : '';
+
+        if (!API_KEY) throw new Error("API Key not found in env.js");
+
+        const genAI = new GoogleGenerativeAI(API_KEY);
+        const model = genAI.getGenerativeModel({ model: "gemini-pro" });
+
+        const result = await model.generateContent(query);
+        const response = await result.response;
+        let text = response.text();
+
+        // Simple markdown cleanup if needed
+        text = text.replace(/\*\*/g, '').replace(/\*/g, '');
+
+        return text;
+    } catch (error) {
+        console.error("AI Error:", error);
+        return "I encountered an error connecting to the AI. Please try again.";
     }
-
-    // "Not make reference to notes" - Generic responses for demo
-    const responses = [
-        "That is an interesting perspective. Tell me more.",
-        "I am a demo AI assistant. I don't have access to external databases yet, but I'm listening.",
-        "Could you elaborate on that?",
-        "That's a great question. What do you think is the answer?",
-        "I am designed to help you think, but I don't read your notes directly anymore."
-    ];
-
-    return responses[Math.floor(Math.random() * responses.length)];
 }
 
 init();
