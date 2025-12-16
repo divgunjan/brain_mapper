@@ -8,8 +8,9 @@ body {
     font-family: 'SF Pro Display', 'SF Pro Text', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
     background: #1e1e1e;
     color: #dcddde;
-    height: 100vh;
-    overflow: hidden;
+    height: auto;
+    min-height: 100vh;
+    overflow-x: hidden;
 }
 
 input,
@@ -640,4 +641,98 @@ section.active-section {
     font-style: italic;
     border-top: 1px solid #222;
     padding-top: 2rem;
+}
+
+/* --- Footer --- */
+.site-footer {
+    padding: 40px 20px;
+    background: #111;
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
+    text-align: center;
+    color: #666;
+    font-size: 14px;
+}
+
+.footer-content {
+    max-width: 1200px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.made-with {
+    color: #888;
+}
+
+/* --- Single Screen Landing Page Refactor --- */
+body.landing-page {
+    height: 100vh;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+body.landing-page #home-section {
+    flex: 1;
+    height: auto;
+    padding-top: 40px;
+    /* Further reduced from 60px */
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    min-height: 0;
+    /* Allow shrinking */
+}
+
+/* Compact Hero Content */
+body.landing-page .hero-content {
+    margin-top: -20px;
+    /* Slight pull up */
+}
+
+body.landing-page .hero-content h1 {
+    font-size: 3rem;
+    /* Further reduced from 3.5rem */
+    margin-bottom: 0.5rem;
+    line-height: 1.1;
+}
+
+body.landing-page .hero-content p {
+    font-size: 1rem;
+    /* Further reduced */
+    margin-bottom: 1.2rem;
+    max-width: 500px;
+}
+
+body.landing-page .cta-group {
+    margin-bottom: 1.5rem;
+}
+
+body.landing-page .floating-cards {
+    /* Ensure cards don't cause overflow issues */
+    z-index: -1;
+    opacity: 0.6;
+    /* Slight fade to focus on text */
+}
+
+/* Compact Footer for Landing Page */
+body.landing-page .site-footer {
+    padding: 10px;
+    /* Significantly reduced */
+    background: transparent;
+    /* Seamless blend */
+    border-top: none;
+    /* Cleaner look */
+    margin-top: auto;
+    /* Push to bottom if content is small */
+    flex-shrink: 0;
+}
+
+body.landing-page .footer-content {
+    gap: 5px;
+}
+
+body.landing-page .made-with span {
+    font-size: 14px;
 }
