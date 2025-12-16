@@ -4,7 +4,7 @@ function showLanding() {
     const nav = document.getElementById('main-nav');
 
     if (home) home.classList.add('active-section');
-    if (about) about.classList.add('active-section');
+    if (about) about.classList.add('active-section'); // Ensure about is visible too
     if (nav) nav.style.display = 'block';
 }
 

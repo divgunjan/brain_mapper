@@ -16,7 +16,7 @@
                 <span>Brain Mapper</span>
             </div>
             <div class="nav-links">
-                <a href="#home-section" onclick="showLanding(); scrollToSection('home-section')">Home</a>
+                <a href="index.html">Home</a>
                 <a href="#about-section" onclick="scrollToSection('about-section')">About</a>
                 <a href="note-file.html" target="_blank" class="cta-btn">Launch App</a>
             </div>
@@ -31,9 +31,7 @@
             <div class="cta-group">
                 <a href="note-file.html" target="_blank" class="hero-btn primary"
                     style="text-decoration: none; display: inline-block;">Get Started</a>
-                <button onclick="scrollToSection('about-section')" class="hero-btn secondary">Learn More</button>
-            </div>
-
+                <button onclick="scrollToSection('about-section')" class="hero-btn secondary">
             <div class="floating-cards">
                 <div class="card card-1">Docs</div>
                 <div class="card card-2">Class Notes</div>
@@ -43,39 +41,40 @@
         </div>
     </section>
 
-    <section id="about-section" class="hidden-section">
+    <section id="about-section" class="about-container active-section">
         <div class="about-content">
-            <h2>About Brain Mapper</h2>
-            <p class="about-description">
-                Brain Mapper is a personal knowledge base designed to help you capture, organize, and visualize your
-                thoughts.
-                Unlike traditional note-taking apps, it works the way your brain does—connecting ideas through a network
-                of associations.
-            </p>
+            <h2 class="section-title">Beyond Linear Thinking</h2>
+            <p class="tagline">Brain Mapper is more than a note-taking tool—it's a reflection of how your mind actually
+                works.</p>
 
-            <div class="features-grid">
-                <div class="feature-card">
-                    <h3>🔗 Bi-directional Linking</h3>
-                    <p>Build a web of knowledge by connecting notes with simple <code>[[Wiki Links]]</code>.</p>
+            <div class="about-grid">
+                <div class="about-card">
+                    <div class="icon">🕸️</div>
+                    <h3>Networked Thought</h3>
+                    <p>Break free from the hierarchy of folders. Use <strong>Wiki-links</strong> to connect ideas across
+                        your vault and see your knowledge grow as a living network.</p>
                 </div>
-                <div class="feature-card">
-                    <h3>🕸️ Live Graph View</h3>
-                    <p>Visualize your second brain in real-time. See how your ideas connect and grow.</p>
+
+                <div class="about-card">
+                    <div class="icon">�</div>
+                    <h3>Graph Visualization</h3>
+                    <p>Our integrated <strong>Graph View</strong> lets you see the connections you've made, helping you
+                        identify patterns and clusters in your research automatically.</p>
                 </div>
-                <div class="feature-card">
-                    <h3>🤖 AI Thought Partner</h3>
-                    <p>An intelligent assistant that asks the right questions to deepen your understanding without
-                        reading your private data.</p>
+
+                <div class="about-card">
+                    <div class="icon">🤖</div>
+                    <h3>AI Co-Pilot</h3>
+                    <p>Engage with an <strong>AI Assistant</strong> that doesn't just summarize, but asks the right
+                        questions to push your thinking further and break through creative blocks.</p>
                 </div>
-                <div class="feature-card">
-                    <h3>🔒 Privacy First</h3>
-                    <p>Your data stays on your device. No cloud servers, no tracking. Just you and your thoughts.</p>
-                </div>
+            </div>
+
+            <div class="about-footer">
+                <p>Built for researchers, digital gardeners, and the perpetually curious.</p>
             </div>
         </div>
     </section>
-
-    <!-- App Section Removed (Externalized to note-file.html) -->
 </body>
 
 </html>
