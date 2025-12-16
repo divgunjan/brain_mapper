@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>About - Brain Mapper</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        /* Override default hidden state for about container on this page */
+        .about-container {
+            display: block;
+            opacity: 1;
+            /* Override default opacity: 0 from section */
+            min-height: 100vh;
+            padding-top: 100px;
+            /* Space for fixed navbar */
+        }
+
+        body {
+            background: #111;
+            /* Ensure background match */
+        }
+    </style>
+</head>
+
+<body>
+    <nav id="main-nav">
+        <div class="nav-content">
+            <div class="nav-logo">
+                <img src="logo.png" alt="Brain Mapper">
+                <span>Brain Mapper</span>
+            </div>
+            <div class="nav-links">
+                <a href="index.html">Home</a>
+                <a href="#" class="active">About</a>
+                <a href="note-file.html" target="_blank" class="cta-btn">Launch App</a>
+            </div>
+        </div>
+    </nav>
+
+    <section class="about-container">
+        <div class="about-content">
+            <h2 class="section-title">Beyond Linear Thinking</h2>
+            <p class="tagline">Brain Mapper is more than a note-taking tool—it's a reflection of how your mind actually
+                works.</p>
+
+            <div class="about-grid">
+                <div class="about-card">
+                    <div class="icon">🕸️</div>
+                    <h3>Networked Thought</h3>
+                    <p>Break free from the hierarchy of folders. Use <strong>Wiki-links</strong> to connect ideas across
+                        your vault and see your knowledge grow as a living network.</p>
+                </div>
+
+                <div class="about-card">
+                    <div class="icon">📊</div>
+                    <h3>Graph Visualization</h3>
+                    <p>Our integrated <strong>Graph View</strong> lets you see the connections you've made, helping you
+                        identify patterns and clusters in your research automatically.</p>
+                </div>
+
+                <div class="about-card">
+                    <div class="icon">🤖</div>
+                    <h3>AI Co-Pilot</h3>
+                    <p>Engage with an <strong>AI Assistant</strong> that doesn't just summarize, but asks the right
+                        questions to push your thinking further and break through creative blocks.</p>
+                </div>
+            </div>
+
+            <div class="about-footer">
+                <p>Built for researchers, digital gardeners, and the perpetually curious.</p>
+            </div>
+        </div>
+    </section>
+</body>
+
+</html>
